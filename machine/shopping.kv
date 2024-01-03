@@ -5,12 +5,14 @@
         name: 'BuyScreen'
     ItemScreen:
         name: 'ItemScreen'
+    CarScreen:
+        name: 'CarScreen'
 
 <InitScreen>:
     Image:
         size: self.size
         pos: self.pos
-        source: 'templates/fundo_tela_inicial.png'
+        source: 'templates/background_initiscreen.png'
 
 <HomeBar>:
     BoxLayout:
@@ -18,12 +20,12 @@
             Rectangle:
                 size: self.size
                 pos: self.pos
-                source: 'templates/fundo_tela_de_compra.png'
+                source: 'templates/background_buyscreen.png'
 
         Button:
             id: home_button
-            background_normal: 'templates/botoes/home_normal.png'
-            background_down: 'templates/botoes/home_down.png'
+            background_normal: 'templates/buttons/home_normal.png'
+            background_down: 'templates/buttons/home_down.png'
             size_hint_y: None
             height: 100
             size_hint_x: None
@@ -41,56 +43,70 @@
             size: self.size
             pos: self.pos
     BoxLayout:
-        orientation: 'vertical'
-        HomeBar:
-            size_hint_y: None
-            height: self.width * (100 / 595)
-        BoxLayout:
-            orientation: 'horizontal'
-            ScrollView:
-                size_hint_x: 2/4
-                BoxLayout:
-                    id: Class_Buy1
-                    orientation: 'vertical'
-                    size_hint_y: None
-                    height: self.minimum_height
-                    spacing: 10
-            ScrollView:
-                orientation: 'vertical'
-                BoxLayout:
-                    id: Class_Buy2
-                    orientation: 'vertical'
-                    size_hint_y: None
-                    height: self.minimum_height
-
+        id: BuyScreen
+        opacity: 0
         BoxLayout:
             orientation: 'vertical'
-            size_hint_y: 1/3
+            HomeBar:
+                size_hint_y: None
+                height: self.width * (100 / 595)
             BoxLayout:
-                size_hint_y: 0.25
-                canvas:
-                    Color:
-                        rgba: 0.80, 0.80, 0.80, 1.0
-                    Rectangle:
-                        size: self.size
-                        pos: self.pos
-
-            BoxLayout:
-                canvas:
-                    Color:
-                        rgba: 0.92, 0.92, 0.82, 1.0
-                    Rectangle:
-                        size: self.size
-                        pos: self.pos
+                orientation: 'horizontal'
                 ScrollView:
+                    size_hint_x: 2/4
                     BoxLayout:
-                        id: CarBar
+                        id: Class_Buy1
                         orientation: 'vertical'
                         size_hint_y: None
                         height: self.minimum_height
                         spacing: 10
+                ScrollView:
+                    orientation: 'vertical'
+                    BoxLayout:
+                        id: Class_Buy2
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
 
-<CarConstruct>:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: 1/3
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: 0.40
+                    canvas:
+                        Color:
+                            rgba: 0.80, 0.80, 0.80, 1.0
+                        Rectangle:
+                            size: self.size
+                            pos: self.pos
+                    BoxLayout:
+                    Button:
+                        size_hint_y: 4/5
+                        pos_hint: {'center_y': 0.5}
+                        size_hint_x: None
+                        width: self.height
+                        on_release:
+                            root.on_cart_button_release()
+                    BoxLayout:
+                        size_hint_x: None
+                        width: self.height / 2
+
+                BoxLayout:
+                    canvas:
+                        Color:
+                            rgba: 1.0, 0.9451, 0.6588, 1.0
+                        Rectangle:
+                            size: self.size
+                            pos: self.pos
+                    ScrollView:
+                        BoxLayout:
+                            id: CartBar
+                            orientation: 'vertical'
+                            size_hint_y: None
+                            height: self.minimum_height
+
+<CartConstruct>:
     orientation: 'vertical'
     size_hint_y: None
     height: 40
@@ -98,34 +114,27 @@
     BoxLayout:
         orientation: 'horizontal'
 
-        canvas:
-            Color:
-                rgba: 0.80, 0.80, 0.70, 1.0
-            Rectangle:
-                size: self.width * 2 / 3, self.height
-                pos: (self.center_x - (self.width * 2 / 3) / 2), (self.center_y - self.height / 2)
-
         Button:
             size_hint_x: None
-            width: self.parent.width / 6  # 1/3 dos 2/3 (2/3 * 1/3)
-            pos_hint: {'center_y': 0.5}
+            width: self.parent.width / 5
+            pos_hint: {'center_y': 0.4}
             text: '-'
-            on_release: root.remove_self()
+            on_release:
+                root.remove_self()
 
         Label:
             id: item
-            size_hint_x: None
-            width: self.parent.width * 2 / 3  # 2/3 do espaço disponível
             pos_hint: {'center_x': 0.1, 'center_y': 0.5}
             color: 0, 0, 0, 1.0
-            font_size: 20
+            font_size: 15
 
         Button:
             size_hint_x: None
-            width: self.parent.width / 6  # 1/3 dos 2/3 (2/3 * 1/3)
-            pos_hint: {'center_y': 0.5}
+            width: self.parent.width / 5
+            pos_hint: {'center_y': 0.4}
             text: '+'
-            on_release: root.duplicate_self()
+            on_release:
+                root.duplicate_self()
 
 <ClassCreate>:
     orientation: 'vertical'
@@ -160,7 +169,7 @@
         size_hint_x: None
         width: app.root.width / 3.15
 
-<SCCimpar>:
+<SCCodd>:
     orientation: 'horizontal'
     size_hint_y: None
     height: app.root.height / 3.15
@@ -263,3 +272,55 @@
                 id: item2
                 size_hint: None, None
                 size: 50, 50
+
+<CarScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        id: CarScreen
+        opacity: 0
+        HomeBar:
+            size_hint_y: None
+            height: self.width * (100 / 595)
+        BoxLayout:
+            orientation: 'vertical'
+            id: screen
+            canvas:
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+                    source: 'templates/background_carscreen.png'
+
+            AnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'top'
+                Button:
+                    size_hint_y: None
+                    height: screen.height / 10
+                    size_hint_x: None
+                    width: self.height * 5
+                    font_size: 30
+                    text: 'Back'
+                    on_release:
+                        root.on_back_button_release()
+
+            AnchorLayout:
+                anchor_x: 'center'
+                size_hint_y: None
+                height: screen.height - (screen.height / 10) * 2
+                ScrollView:
+                    BoxLayout:
+                        id: invoice
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+
+            AnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'bottom'
+                Button:
+                    size_hint_y: None
+                    height: screen.height / 10
+                    size_hint_x: None
+                    width: self.height * 5
+                    font_size: 30
+                    text: 'Finalize Purchase'
