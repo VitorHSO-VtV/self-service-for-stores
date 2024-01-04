@@ -26,14 +26,49 @@
             id: home_button
             background_normal: 'templates/buttons/home_normal.png'
             background_down: 'templates/buttons/home_down.png'
-            size_hint_y: None
-            height: 100
+            size_hint_y: 29/30
             size_hint_x: None
-            width: 100
+            width: self.height
             pos: 20, self.y
-            pos_hint: {'center_y': 0.5}
+            pos_hint: {'center_y': 0.4}
             on_release:
                 root.on_home_button_release()
+
+<WhereEat>:
+    background_color: 0, 0, 0, 0
+    title: ''
+    separator_color: 0, 0, 0, 0
+    AnchorLayout:
+        anchor_y: 'center'
+        anchor_x: 'center'
+        BoxLayout:
+            size_hint_y: 2/6
+            size_hint_x: None
+            width: self.height * 1.6
+            AnchorLayout:
+                anchor_y: 'center'
+                anchor_x: 'right'
+                Button:
+                    on_release: root.to_go()
+                    size_hint_y: 19/20
+                    size_hint_x: None
+                    width: self.height
+                    background_normal: 'templates/buttons/to_go_normal.png'
+                    background_down: 'templates/buttons/to_go_down.png'
+
+            BoxLayout:
+                size_hint_x: 2/40
+
+            AnchorLayout:
+                anchor_y: 'center'
+                anchor_x: 'left'
+                Button:
+                    on_release: root.to_stay()
+                    size_hint_y: 19/20
+                    size_hint_x: None
+                    width: self.height
+                    background_normal: 'templates/buttons/to_stay_normal.png'
+                    background_down: 'templates/buttons/to_stay_down.png'
 
 <BuyScreen>:
     canvas:

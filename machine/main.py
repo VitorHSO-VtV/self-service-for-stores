@@ -3,12 +3,14 @@ from kivy.graphics import Color, Rectangle
 from kivy.uix.boxlayout import BoxLayout
 from kivy.animation import Animation
 from kivy.core.window import Window
+from kivy.uix.popup import Popup
 from kivy.uix.image import Image
 from kivy.app import App
 import functions as fc
 import os
 
 tot = 0
+whereeat = 0
 
 
 class Manager(ScreenManager):
@@ -21,6 +23,8 @@ class InitScreen(Screen):
         fc.clear_file('manager_files/invoice.txt')
         global tot
         tot = 0
+        global whereeat
+        whereeat = 0
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
@@ -38,6 +42,13 @@ class HomeBar(BoxLayout):
         app.root.current = 'InitScreen'
 
 
+class WhereEat(Popup):
+    def to_stay(self):
+        self.dismiss()
+
+    def to_go(self):
+        self.dismiss()
+
 class BuyScreen(Screen):
     def on_pre_leave(self):
         fade_out = Animation(opacity=0, duration=0.5)
@@ -47,13 +58,15 @@ class BuyScreen(Screen):
         super().on_enter(*args)
         self.ids.Class_Buy1.clear_widgets()
         self.ids.Class_Buy2.clear_widgets()
-        sub_classes = os.listdir(f'templates/bebidas_normal')
+        classes = os.listdir(f'templates/classes_normal')
+        sub_classes = os.listdir(f'templates/{classes[0].replace('.png', '')}_normal')
         for sub_classe in range(0, len(sub_classes) - 1, 2):
             self.ids.Class_Buy2.add_widget(
-                SubClassCreate(text1='bebidas', sub_classe1=sub_classes[sub_classe], text2='bebidas',
+                SubClassCreate(text1=classes[0].replace('.png', ''), sub_classe1=sub_classes[sub_classe],
+                               text2=classes[0].replace('.png', ''),
                                sub_classe2=sub_classes[sub_classe + 1]))
         if len(sub_classes) % 2 != 0:
-            self.ids.Class_Buy2.add_widget(SCCodd(text1='bebidas', sub_classe1=sub_classes[len(sub_classes) - 1]))
+            self.ids.Class_Buy2.add_widget(SCCodd(text1=classes[0].replace('.png', ''), sub_classe1=sub_classes[len(sub_classes) - 1]))
 
         anim = Animation(opacity=1, duration=0.5)
         anim.start(self.ids.BuyScreen)
@@ -67,6 +80,11 @@ class BuyScreen(Screen):
         items = fc.txt_to_py('manager_files/cart.txt')
         for item in range(0, len(items), 2):
             self.ids.CartBar.add_widget(CartConstruct(items[item], float(items[item + 1])))
+
+        global whereeat
+        if whereeat == 0:
+            whereeat = 1
+            WhereEat().open()
 
     @staticmethod
     def on_cart_button_release():
@@ -121,15 +139,14 @@ class ClassCreate(BoxLayout):
         super().__init__(**kwargs)
         anim = Animation(pos_hint={'center_x': 0.5}, duration=0.5)
         anim.start(self.ids.btn1)
-        self.ids.btn1.text = text
+        self.text = text
         self.ids.btn1.background_normal = image_source
         self.ids.btn1.background_down = image_source.replace('normal', 'down')
         self.ids.btn1.bind(on_release=self.on_button_release)
 
     def on_button_release(self, *args):
-        btn1_text = self.ids.btn1.text
         app = App.get_running_app()
-        app.root.get_screen('BuyScreen').trigger_buy_screen(btn1_text.lower())
+        app.root.get_screen('BuyScreen').trigger_buy_screen(self.text.lower())
 
 
 class SubClassCreate(BoxLayout):
