@@ -16,4 +16,10 @@ I created a screen for the customer to complete the purchase
 
 My goal for today is to make a popup to the customer to choose if eat on restaurant or no
 
-I finished the 1st part for initial popup, this part is the visual part, the backend is not finished
+I finished the 1st part for initial, the backend is not finished
+
+### Day 3 - 04/01/2024
+
+My goal for today is to learn to do the invoice in pdf
+
+I finished the 2nd part for Day 2 and I created a system for to do pdf files, I did not finish the invoice image

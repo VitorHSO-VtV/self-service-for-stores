@@ -21,6 +21,9 @@ class InitScreen(Screen):
     def on_enter(self, *args):
         fc.clear_file('manager_files/cart.txt')
         fc.clear_file('manager_files/invoice.txt')
+        fc.clear_file('manager_files/invoice.png')
+        fc.clear_file('manager_files/invoice.pdf')
+
         global tot
         tot = 0
         global whereeat
@@ -45,9 +48,12 @@ class HomeBar(BoxLayout):
 class WhereEat(Popup):
     def to_stay(self):
         self.dismiss()
+        fc.file_append('manager_files/invoice.txt', 'to_stay')
 
     def to_go(self):
         self.dismiss()
+        fc.file_append('manager_files/invoice.txt', 'to_go')
+
 
 class BuyScreen(Screen):
     def on_pre_leave(self):
@@ -85,6 +91,9 @@ class BuyScreen(Screen):
         if whereeat == 0:
             whereeat = 1
             WhereEat().open()
+
+    def on_enter(self, *args):
+        fc.generate_to_pdf(self.ids.BuyScreen, 'manager_files/invoice')
 
     @staticmethod
     def on_cart_button_release():
@@ -216,13 +225,13 @@ class ItemScreen(Screen):
 
         try:
             lista = fc.txt_to_py(image_path.replace('.png', '.txt').replace('normal', 'text'))
-            print(f"Linhas do arquivo de texto: {lista}")
+            print(f'Linhas do arquivo de texto: {lista}')
             self.price = lista[0]
             if len(lista) >= 3:
                 for element in range(1, len(lista), 2):
                     self.add_list_create(lista[element], lista[element + 1])
         except Exception as e:
-            print(f"Erro ao processar arquivos: {e}")
+            print(f'Erro ao processar arquivos: {e}')
 
     def name_and_class(self, name_class):
         self.name_class = name_class
@@ -249,9 +258,9 @@ class ItemScreen(Screen):
     def add_list_create(self, text, price):
         try:
             self.ids.Add.add_widget(ListCreate(text=text, price=price))
-            print(f"ListCreate adicionado com texto: {text}")
+            print(f'ListCreate adicionado com texto: {text}')
         except Exception as e:
-            print(f"Erro ao adicionar ListCreate: {e}")
+            print(f'Erro ao adicionar ListCreate: {e}')
 
     def on_pre_enter(self, *args):
         anim = Animation(opacity=1, duration=0.5)
@@ -266,6 +275,7 @@ class ListCreate(BoxLayout):
     def __init__(self, text='', price='', **kwargs):
         super().__init__(**kwargs)
         self.ids.item1.text = f'[b][color=000000]{text}[/color] [color=FA2B2B]R${price}[/color][/b]'
+
 
 class CarScreen(Screen):
     def __init__(self, **kwargs):
