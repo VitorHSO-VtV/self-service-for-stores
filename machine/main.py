@@ -10,7 +10,7 @@ import functions as fc
 import os
 
 tot = 0
-whereeat = 0
+where_eat = 0
 
 
 class Manager(ScreenManager):
@@ -20,14 +20,14 @@ class Manager(ScreenManager):
 class InitScreen(Screen):
     def on_enter(self, *args):
         fc.clear_file('manager_files/cart.txt')
-        fc.clear_file('manager_files/invoice.txt')
-        fc.clear_file('manager_files/invoice.png')
-        fc.clear_file('manager_files/invoice.pdf')
+        fc.clear_file('manager_files/invoice_items.txt')
+        #fc.clear_file('manager_files/invoice.pdf')
+        fc.clear_file('manager_files/finalized_invoice.txt')
 
         global tot
         tot = 0
-        global whereeat
-        whereeat = 0
+        global where_eat
+        where_eat = 0
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
@@ -48,11 +48,11 @@ class HomeBar(BoxLayout):
 class WhereEat(Popup):
     def to_stay(self):
         self.dismiss()
-        fc.file_append('manager_files/invoice.txt', 'to_stay')
+        fc.file_append('manager_files/invoice_items.txt', 'Comer Aqui')
 
     def to_go(self):
         self.dismiss()
-        fc.file_append('manager_files/invoice.txt', 'to_go')
+        fc.file_append('manager_files/invoice_items.txt', 'Para Levar')
 
 
 class BuyScreen(Screen):
@@ -87,13 +87,10 @@ class BuyScreen(Screen):
         for item in range(0, len(items), 2):
             self.ids.CartBar.add_widget(CartConstruct(items[item], float(items[item + 1])))
 
-        global whereeat
-        if whereeat == 0:
-            whereeat = 1
+        global where_eat
+        if where_eat == 0:
+            where_eat = 1
             WhereEat().open()
-
-    def on_enter(self, *args):
-        fc.generate_to_pdf(self.ids.BuyScreen, 'manager_files/invoice')
 
     @staticmethod
     def on_cart_button_release():
@@ -126,7 +123,7 @@ class CartConstruct(BoxLayout):
             parent_layout.remove_widget(self)
             fc.remove_line_from_file('manager_files/cart.txt', self.text + '\n')
             fc.remove_line_from_file('manager_files/cart.txt', str(self.price) + '\n')
-            fc.remove_line_from_file('manager_files/invoice.txt', self.text + '\n')
+            fc.remove_line_from_file('manager_files/invoice_items.txt', self.text + '\n')
             global tot
             tot -= self.price
             print(tot)
@@ -137,7 +134,7 @@ class CartConstruct(BoxLayout):
             parent_layout.add_widget(CartConstruct(text=self.text, price=self.price))
             fc.file_append('manager_files/cart.txt', self.text)
             fc.file_append('manager_files/cart.txt', self.price)
-            fc.file_append('manager_files/invoice.txt', self.text)
+            fc.file_append('manager_files/invoice_items.txt', self.text)
             global tot
             tot += self.price
             print(tot)
@@ -242,7 +239,7 @@ class ItemScreen(Screen):
             tot += float(self.price)
             fc.file_append('manager_files/cart.txt', f'{self.name_class}R${self.price.replace('.', ',')}')
             fc.file_append('manager_files/cart.txt', float(self.price))
-            fc.file_append('manager_files/invoice.txt', f'{self.name_class}R${self.price.replace('.', ',')}')
+            fc.file_append('manager_files/invoice_items.txt', f'{self.name_class}R${self.price.replace('.', ',')}')
         except AttributeError:
             print('object has no attribute price')
         except Exception as e:
@@ -302,6 +299,31 @@ class CarScreen(Screen):
         app.root.transition.direction = 'down'
         app.root.current = 'BuyScreen'
 
+    def on_finalize_purchase(self):
+        invoice_information_store = fc.txt_to_py('manager_files/invoice_information_store.txt')
+        for information in invoice_information_store:
+            fc.file_append('manager_files/finalized_invoice.txt', information)
+        items = fc.txt_to_py('manager_files/invoice_items.txt')
+        for item in items:
+            fc.file_append('manager_files/finalized_invoice.txt', item)
+        global tot
+        fc.file_append('manager_files/finalized_invoice.txt', f'Total: R${"{:.2f}".format(tot).replace(".", ",")}')
+        password = fc.txt_to_py('manager_files/password.txt')
+        for pas in password:
+            fc.file_append('manager_files/finalized_invoice.txt', pas)
+        password_now = int(password[0].replace('-------------------SENHA-', '').replace('-------------------', ''))
+        password_now += 1
+        if password_now == 1000:
+            password_now = 100
+        fc.clear_file('manager_files/password.txt')
+        fc.file_append('manager_files/password.txt', f'-------------------SENHA-{password_now}-------------------')
+
+        fc.text_to_pdf('manager_files/finalized_invoice.txt', 'manager_files/invoice.pdf')
+
+        app = App.get_running_app()
+        app.root.transition.duration = 1.0
+        app.root.transition.direction = 'down'
+        app.root.current = 'InitScreen'
 
 class Shopping(App):
     def build(self):

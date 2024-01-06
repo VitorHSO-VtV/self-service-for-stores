@@ -1,3 +1,4 @@
+from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 
@@ -59,6 +60,42 @@ def generate_to_pdf(layout, output_file_path):
     layout.export_to_png(f'{output_file_path}.png')
     pdf_canvas.drawInlineImage(f'{output_file_path}.png', 0, 0, width, height)
     pdf_canvas.save()
+
+
+def text_to_pdf(input_file, output_file, width=400, font_size=21):
+    with open(input_file, 'r', encoding='utf-8') as text_file:
+        lines = text_file.readlines()
+
+    height = len(lines) * font_size * 1.2
+
+    pdf = canvas.Canvas(output_file, pagesize=(width, height))
+
+    y_pos = height - font_size
+    for line in lines:
+        pdf.setFont("Helvetica", font_size)
+        pdf.drawString(10, y_pos, line.strip())
+        y_pos -= font_size * 1.2
+
+    pdf.save()
+
+
+def replace_line(file_path, target_line, new_content):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    found = False
+    for i, line in enumerate(lines):
+        if target_line in line:
+            lines[i] = new_content
+            found = True
+            break
+
+    if found:
+        with open(file_path, 'w') as file:
+            file.writelines(lines)
+        print(f'A linha contendo {target_line} foi substituída por {new_content} em {file_path}.')
+    else:
+        print(f'A linha contendo {target_line} não foi encontrada em {file_path}.')
 
 
 def clear_file(file_path):
