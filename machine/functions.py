@@ -1,8 +1,10 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from escpos.printer import Usb
+import fitz
 
 
-def txt_to_py(file_path):
+def read_lines(file_path):
     array = []
     try:
         with open(file_path, 'r') as arquivo:
@@ -15,7 +17,7 @@ def txt_to_py(file_path):
         return []
 
 
-def file_append(file_path, text):
+def append_line(file_path, text):
     try:
         with open(file_path, 'a') as arquivo:
             arquivo.write(str(text) + '\n')
@@ -25,7 +27,7 @@ def file_append(file_path, text):
         print(f'Erro ao adicionar linha em {file_path}: {e}')
 
 
-def remove_line_from_file(file_path, line_to_remove):
+def remove_line(file_path, line_to_remove):
     try:
         with open(file_path, 'r') as file:
             lines = file.readlines()
@@ -96,6 +98,21 @@ def replace_line(file_path, target_line, new_content):
         print(f'A linha contendo {target_line} foi substituída por {new_content} em {file_path}.')
     else:
         print(f'A linha contendo {target_line} não foi encontrada em {file_path}.')
+
+
+def pdf_print(pdf_path, vendor_id, product_id):
+    printer = Usb(vendor_id, product_id, 0, 0x81, 0x03)
+
+    try:
+        pdf_doc = fitz.open(pdf_path)
+        for page_num in range(pdf_doc.page_count):
+            page = pdf_doc[page_num]
+            text_page = page.get_text()
+            printer.text(text_page)
+            printer.cut()
+
+    finally:
+        printer.close()
 
 
 def clear_file(file_path):

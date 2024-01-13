@@ -24,10 +24,16 @@ My goal for today is to learn to do the invoice in pdf
 
 I finished the 2nd part for Day 2 and I created a system for to do pdf files, I did not finish the invoice image
 
-### Day 4 - 01/04/2024
+### Day 4 - 01/05/2024
 
 My goal for today is to finish all the things from the other days, so I don't have to work on the weekend
 
 I finished the invoice system
 
 I haven't started the printing system and card machine system yet
+
+### Day 5 -> 10 - 1/8/2024 -> 1/13/2024
+
+My goal for this week is to do the 1st part of the pay system, this part is the pix system
+
+I finished the pix system, it generates the qrcode

@@ -7,6 +7,10 @@
         name: 'ItemScreen'
     CarScreen:
         name: 'CarScreen'
+    PayScreen:
+        name: 'PayScreen'
+    PixScreen:
+        name: 'PixScreen'
 
 <InitScreen>:
     Image:
@@ -21,7 +25,6 @@
                 size: self.size
                 pos: self.pos
                 source: 'templates/background_buyscreen.png'
-
         Button:
             id: home_button
             background_normal: 'templates/buttons/home_normal.png'
@@ -85,6 +88,7 @@
             HomeBar:
                 size_hint_y: None
                 height: self.width * (100 / 595)
+
             BoxLayout:
                 orientation: 'horizontal'
                 ScrollView:
@@ -95,6 +99,7 @@
                         size_hint_y: None
                         height: self.minimum_height
                         spacing: 10
+
                 ScrollView:
                     orientation: 'vertical'
                     BoxLayout:
@@ -115,17 +120,19 @@
                         Rectangle:
                             size: self.size
                             pos: self.pos
-                    BoxLayout:
+
                     Button:
-                        size_hint_y: 4/5
-                        pos_hint: {'center_y': 0.5}
-                        size_hint_x: None
-                        width: self.height
+                        text: 'Clique para finalizar a compra'
+                        color: 0, 0, 0, 1
+                        font_size: 20
+                        background_color: 0.80, 0.80, 0.80, 1.0
+                        background_normal: ''
+                        background_down: ''
+                        on_press:
+                            self.background_color = 0.60, 0.60, 0.60, 1.0
                         on_release:
+                            self.background_color = 0.80, 0.80, 0.80, 1.0
                             root.on_cart_button_release()
-                    BoxLayout:
-                        size_hint_x: None
-                        width: self.height / 2
 
                 BoxLayout:
                     canvas:
@@ -134,6 +141,7 @@
                         Rectangle:
                             size: self.size
                             pos: self.pos
+
                     ScrollView:
                         BoxLayout:
                             id: CartBar
@@ -197,6 +205,7 @@
         id: btn2
         size_hint_x: None
         width: app.root.width / 3.15
+
     Button:
         opacity: 1
         pos_hint: {'center_y': 0.1}
@@ -286,6 +295,7 @@
     BoxLayout:
         BoxLayout:
             size_hint_x: 2.4/3
+
         BoxLayout:
             Label:
                 color: 0, 0, 0, 1
@@ -307,6 +317,8 @@
                 id: item2
                 size_hint: None, None
                 size: 50, 50
+                on_release:
+                    root.on_item_add()
 
 <CarScreen>:
     BoxLayout:
@@ -316,6 +328,7 @@
         HomeBar:
             size_hint_y: None
             height: self.width * (100 / 595)
+
         BoxLayout:
             orientation: 'vertical'
             id: screen
@@ -361,3 +374,65 @@
                     text: 'Finalize Purchase'
                     on_release:
                         root.on_finalize_purchase()
+
+<PayScreen>:
+    canvas:
+        Color:
+            rgba: 1.0, 1.0, 1.0, 1.0
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    BoxLayout:
+        orientation: 'vertical'
+        id: PayScreen
+        opacity: 0
+        HomeBar:
+            size_hint_y: None
+            height: self.width * (100 / 595)
+        BoxLayout:
+            orientation: 'vertical'
+            AnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'bottom'
+                Button:
+                    size_hint_y: 1/2
+                    size_hint_x: None
+                    width: self.height * 3
+                    font_size: 30
+                    text: 'pix'
+                    on_release:
+                        root.on_pixqr()
+            AnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'center'
+                Button:
+                    size_hint_y: 1/2
+                    size_hint_x: None
+                    width: self.height * 3
+                    font_size: 30
+                    text: 'débito'
+            AnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'top'
+                Button:
+                    size_hint_y: 1/2
+                    size_hint_x: None
+                    width: self.height * 3
+                    font_size: 30
+                    text: 'crédito'
+
+<PixScreen>:
+    canvas:
+        Color:
+            rgba: 1.0, 1.0, 1.0, 1.0
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    BoxLayout:
+        orientation: 'vertical'
+        id: PixScreen
+        opacity: 0
+        HomeBar:
+            size_hint_y: None
+            height: self.width * (100 / 595)
+        BoxLayout:

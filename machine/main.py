@@ -5,12 +5,14 @@ from kivy.animation import Animation
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
 from kivy.uix.image import Image
+from pixqrcodegen import *
 from kivy.app import App
 import functions as fc
 import os
 
 tot = 0
 where_eat = 0
+screen = 0
 
 
 class Manager(ScreenManager):
@@ -21,19 +23,21 @@ class InitScreen(Screen):
     def on_enter(self, *args):
         fc.clear_file('manager_files/cart.txt')
         fc.clear_file('manager_files/invoice_items.txt')
-        #fc.clear_file('manager_files/invoice.pdf')
+        fc.clear_file('manager_files/item_note.txt')
         fc.clear_file('manager_files/finalized_invoice.txt')
 
         global tot
         tot = 0
         global where_eat
         where_eat = 0
+        global screen
+        screen = 0
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             self.manager.transition.duration = 1.0
             self.manager.transition.direction = 'up'
-            self.manager.current = 'BuyScreen'
+            self.manager.current = 'PayScreen'
 
 
 class HomeBar(BoxLayout):
@@ -48,11 +52,11 @@ class HomeBar(BoxLayout):
 class WhereEat(Popup):
     def to_stay(self):
         self.dismiss()
-        fc.file_append('manager_files/invoice_items.txt', 'Comer Aqui')
+        fc.append_line('manager_files/invoice_items.txt', 'Comer Aqui')
 
     def to_go(self):
         self.dismiss()
-        fc.file_append('manager_files/invoice_items.txt', 'Para Levar')
+        fc.append_line('manager_files/invoice_items.txt', 'Para Levar')
 
 
 class BuyScreen(Screen):
@@ -62,28 +66,33 @@ class BuyScreen(Screen):
 
     def on_pre_enter(self, *args):
         super().on_enter(*args)
+        global screen
         self.ids.Class_Buy1.clear_widgets()
         self.ids.Class_Buy2.clear_widgets()
         classes = os.listdir(f'templates/classes_normal')
-        sub_classes = os.listdir(f'templates/{classes[0].replace('.png', '')}_normal')
+        sub_classes = os.listdir(f'templates/{classes[screen].replace(".png", "")}_normal')
+
         for sub_classe in range(0, len(sub_classes) - 1, 2):
             self.ids.Class_Buy2.add_widget(
-                SubClassCreate(text1=classes[0].replace('.png', ''), sub_classe1=sub_classes[sub_classe],
-                               text2=classes[0].replace('.png', ''),
+                SubClassCreate(text1=classes[screen].replace('.png', ''), sub_classe1=sub_classes[sub_classe],
+                               text2=classes[screen].replace('.png', ''),
                                sub_classe2=sub_classes[sub_classe + 1]))
+
         if len(sub_classes) % 2 != 0:
-            self.ids.Class_Buy2.add_widget(SCCodd(text1=classes[0].replace('.png', ''), sub_classe1=sub_classes[len(sub_classes) - 1]))
+            self.ids.Class_Buy2.add_widget(
+                SCCodd(text1=classes[screen].replace('.png', ''), sub_classe1=sub_classes[len(sub_classes) - 1]))
 
         anim = Animation(opacity=1, duration=0.5)
         anim.start(self.ids.BuyScreen)
 
-        classes = os.listdir('templates/classes_normal')
-        for classe in classes:
+        for classe in range(0, len(classes)):
             self.ids.Class_Buy1.add_widget(
-                ClassCreate(text=classe.replace('.png', ''), image_source=f'templates/classes_normal/{classe}'))
+                ClassCreate(text=classes[classe].replace('.png', ''),
+                            image_source=f'templates/classes_normal/{classes[classe]}', s_id=classe))
 
         self.ids.CartBar.clear_widgets()
-        items = fc.txt_to_py('manager_files/cart.txt')
+        items = fc.read_lines('manager_files/cart.txt')
+
         for item in range(0, len(items), 2):
             self.ids.CartBar.add_widget(CartConstruct(items[item], float(items[item + 1])))
 
@@ -102,10 +111,12 @@ class BuyScreen(Screen):
     def trigger_buy_screen(self, btn1_text):
         self.ids.Class_Buy2.clear_widgets()
         sub_classes = os.listdir(f'templates/{btn1_text}_normal')
+
         for sub_classe in range(0, len(sub_classes) - 1, 2):
             self.ids.Class_Buy2.add_widget(
                 SubClassCreate(text1=btn1_text, sub_classe1=sub_classes[sub_classe], text2=btn1_text,
                                sub_classe2=sub_classes[sub_classe + 1]))
+
         if len(sub_classes) % 2 != 0:
             self.ids.Class_Buy2.add_widget(SCCodd(text1=btn1_text, sub_classe1=sub_classes[len(sub_classes) - 1]))
 
@@ -121,9 +132,9 @@ class CartConstruct(BoxLayout):
         parent_layout = self.parent
         if parent_layout:
             parent_layout.remove_widget(self)
-            fc.remove_line_from_file('manager_files/cart.txt', self.text + '\n')
-            fc.remove_line_from_file('manager_files/cart.txt', str(self.price) + '\n')
-            fc.remove_line_from_file('manager_files/invoice_items.txt', self.text + '\n')
+            fc.remove_line('manager_files/cart.txt', self.text + '\n')
+            fc.remove_line('manager_files/cart.txt', str(self.price) + '\n')
+            fc.remove_line('manager_files/invoice_items.txt', self.text + '\n')
             global tot
             tot -= self.price
             print(tot)
@@ -132,25 +143,28 @@ class CartConstruct(BoxLayout):
         parent_layout = self.parent
         if parent_layout:
             parent_layout.add_widget(CartConstruct(text=self.text, price=self.price))
-            fc.file_append('manager_files/cart.txt', self.text)
-            fc.file_append('manager_files/cart.txt', self.price)
-            fc.file_append('manager_files/invoice_items.txt', self.text)
+            fc.append_line('manager_files/cart.txt', self.text)
+            fc.append_line('manager_files/cart.txt', self.price)
+            fc.append_line('manager_files/invoice_items.txt', self.text)
             global tot
             tot += self.price
             print(tot)
 
 
 class ClassCreate(BoxLayout):
-    def __init__(self, text='', image_source='', **kwargs):
+    def __init__(self, text='', image_source='', s_id=None, **kwargs):
         super().__init__(**kwargs)
         anim = Animation(pos_hint={'center_x': 0.5}, duration=0.5)
         anim.start(self.ids.btn1)
+        self.s_id = s_id
         self.text = text
         self.ids.btn1.background_normal = image_source
         self.ids.btn1.background_down = image_source.replace('normal', 'down')
         self.ids.btn1.bind(on_release=self.on_button_release)
 
     def on_button_release(self, *args):
+        global screen
+        screen = self.s_id
         app = App.get_running_app()
         app.root.get_screen('BuyScreen').trigger_buy_screen(self.text.lower())
 
@@ -175,7 +189,7 @@ def on_button_release(text, sub_classe):
     app = App.get_running_app()
     item_screen = app.root.get_screen('ItemScreen')
     item_screen.update_image(f'templates/{text}_normal/{sub_classe}')
-    item_screen.name_and_class(f'{text} - {sub_classe.replace('.png', '')}: ')
+    item_screen.name_and_class(f'{text} - {sub_classe.replace(".png", "")}: ')
     app = App.get_running_app()
     app.root.transition.duration = 1.0
     app.root.transition.direction = 'up'
@@ -221,12 +235,12 @@ class ItemScreen(Screen):
         self.ids.Add.clear_widgets()
 
         try:
-            lista = fc.txt_to_py(image_path.replace('.png', '.txt').replace('normal', 'text'))
+            lista = fc.read_lines(image_path.replace('.png', '.txt').replace('normal', 'text'))
             print(f'Linhas do arquivo de texto: {lista}')
             self.price = lista[0]
             if len(lista) >= 3:
-                for element in range(1, len(lista), 2):
-                    self.add_list_create(lista[element], lista[element + 1])
+                for element in range(1, len(lista)):
+                    self.add_list_create(lista[element])
         except Exception as e:
             print(f'Erro ao processar arquivos: {e}')
 
@@ -237,9 +251,19 @@ class ItemScreen(Screen):
         try:
             global tot
             tot += float(self.price)
-            fc.file_append('manager_files/cart.txt', f'{self.name_class}R${self.price.replace('.', ',')}')
-            fc.file_append('manager_files/cart.txt', float(self.price))
-            fc.file_append('manager_files/invoice_items.txt', f'{self.name_class}R${self.price.replace('.', ',')}')
+            fc.append_line('manager_files/cart.txt', f'{self.name_class}R${self.price.replace(".", ",")}')
+            fc.append_line('manager_files/cart.txt', float(self.price))
+            fc.append_line('manager_files/invoice_items.txt', f'{self.name_class}R${self.price.replace(".", ",")}')
+            items = fc.read_lines('manager_files/item_note.txt')
+
+            for item in items:
+                fc.append_line('manager_files/invoice_items.txt', f'...{item}...')
+
+            app = App.get_running_app()
+            app.root.transition.duration = 1.0
+            app.root.transition.direction = 'down'
+            app.root.current = 'BuyScreen'
+
         except AttributeError:
             print('object has no attribute price')
         except Exception as e:
@@ -252,9 +276,9 @@ class ItemScreen(Screen):
         app.root.transition.direction = 'down'
         app.root.current = 'BuyScreen'
 
-    def add_list_create(self, text, price):
+    def add_list_create(self, text):
         try:
-            self.ids.Add.add_widget(ListCreate(text=text, price=price))
+            self.ids.Add.add_widget(ListCreate(text=text))
             print(f'ListCreate adicionado com texto: {text}')
         except Exception as e:
             print(f'Erro ao adicionar ListCreate: {e}')
@@ -266,12 +290,35 @@ class ItemScreen(Screen):
     def on_pre_leave(self, *args):
         anim = Animation(opacity=0, duration=0.5)
         anim.start(self.ids.ItemScreen)
+        fc.clear_file('manager_files/item_note.txt')
 
 
 class ListCreate(BoxLayout):
-    def __init__(self, text='', price='', **kwargs):
+    def __init__(self, text='', **kwargs):
         super().__init__(**kwargs)
-        self.ids.item1.text = f'[b][color=000000]{text}[/color] [color=FA2B2B]R${price}[/color][/b]'
+        fc.append_line('manager_files/item_note.txt', text)
+        self.ids.item1.text = f'[b][color=000000]{text}[/color]'
+        self.text = text
+        self.yn = 0
+
+    def on_item_add(self):
+        if self.yn == 0:
+            fc.remove_line('manager_files/item_note.txt', self.text + '\n')
+            self.yn = 1
+            self.ids.item1.canvas.before.clear()
+            with self.ids.item1.canvas.before:
+                Color(0.85, 0, 0, 0.8)
+                Rectangle(pos=self.ids.item1.pos, size=self.ids.item1.size)
+        else:
+            fc.append_line('manager_files/item_note.txt', self.text)
+            self.yn = 0
+            self.ids.item1.canvas.before.clear()
+            with self.ids.item1.canvas.before:
+                Color(0.85, 0.85, 0.85, 1)
+                Rectangle(pos=self.ids.item1.pos, size=self.ids.item1.size)
+
+    def on_pre_enter(self):
+        self.background_color = (0.85, 0.85, 0.85, 1)
 
 
 class CarScreen(Screen):
@@ -284,7 +331,8 @@ class CarScreen(Screen):
         anim.start(self.ids.CarScreen)
 
         self.ids.invoice.clear_widgets()
-        items = fc.txt_to_py('manager_files/cart.txt')
+        items = fc.read_lines('manager_files/cart.txt')
+
         for item in range(0, len(items), 2):
             self.ids.invoice.add_widget(CartConstruct(items[item], float(items[item + 1])))
 
@@ -300,30 +348,67 @@ class CarScreen(Screen):
         app.root.current = 'BuyScreen'
 
     def on_finalize_purchase(self):
-        invoice_information_store = fc.txt_to_py('manager_files/invoice_information_store.txt')
+        invoice_information_store = fc.read_lines('manager_files/invoice_information_store.txt')
+
         for information in invoice_information_store:
-            fc.file_append('manager_files/finalized_invoice.txt', information)
-        items = fc.txt_to_py('manager_files/invoice_items.txt')
+            fc.append_line('manager_files/finalized_invoice.txt', information)
+
+        items = fc.read_lines('manager_files/invoice_items.txt')
+
         for item in items:
-            fc.file_append('manager_files/finalized_invoice.txt', item)
+            fc.append_line('manager_files/finalized_invoice.txt', item)
+
         global tot
-        fc.file_append('manager_files/finalized_invoice.txt', f'Total: R${"{:.2f}".format(tot).replace(".", ",")}')
-        password = fc.txt_to_py('manager_files/password.txt')
+        fc.append_line('manager_files/finalized_invoice.txt', f'Total: R${"{:.2f}".format(tot).replace(".", ",")}')
+
+        password = fc.read_lines('manager_files/password.txt')
         for pas in password:
-            fc.file_append('manager_files/finalized_invoice.txt', pas)
+            fc.append_line('manager_files/finalized_invoice.txt', pas)
+
         password_now = int(password[0].replace('-------------------SENHA-', '').replace('-------------------', ''))
         password_now += 1
+
         if password_now == 1000:
             password_now = 100
+
         fc.clear_file('manager_files/password.txt')
-        fc.file_append('manager_files/password.txt', f'-------------------SENHA-{password_now}-------------------')
+        fc.append_line('manager_files/password.txt', f'-------------------SENHA-{password_now}-------------------')
 
         fc.text_to_pdf('manager_files/finalized_invoice.txt', 'manager_files/invoice.pdf')
 
         app = App.get_running_app()
         app.root.transition.duration = 1.0
         app.root.transition.direction = 'down'
-        app.root.current = 'InitScreen'
+        app.root.current = 'PayScreen'
+
+
+class PayScreen(Screen):
+    def on_pre_enter(self, *args):
+        anim = Animation(opacity=1, duration=0.5)
+        anim.start(self.ids.PayScreen)
+
+    def on_pixqr(self, *args):
+        payload = Payload('VITOR H DOS S OLIPIA', '+5548988180197', '0.01', 'SAO JOSE', '***', 'manager_files')
+        payload.gerarPayload()
+        app = App.get_running_app()
+        app.root.transition.duration = 1.0
+        app.root.transition.direction = 'down'
+        app.root.current = 'PixScreen'
+
+    def on_pre_leave(self, *args):
+        anim = Animation(opacity=0, duration=0.5)
+        anim.start(self.ids.PayScreen)
+
+
+class PixScreen(Screen):
+    def on_pre_enter(self, *args):
+        anim = Animation(opacity=1, duration=0.5)
+        anim.start(self.ids.PixScreen)
+
+    def on_pre_leave(self, *args):
+        anim = Animation(opacity=0, duration=0.5)
+        anim.start(self.ids.PixScreen)
+
 
 class Shopping(App):
     def build(self):
