@@ -37,6 +37,13 @@
             on_release:
                 root.on_home_button_release()
 
+        Button:
+            background_color: 0, 0, 0, 0
+            on_press:
+                root.on_tools_button_press()
+            on_release:
+                root.on_tools_button_release()
+
 <WhereEat>:
     background_color: 0, 0, 0, 0
     title: ''
@@ -436,3 +443,10 @@
             size_hint_y: None
             height: self.width * (100 / 595)
         BoxLayout:
+            pos_hint: {'center_y': 0.5}
+            Image:
+                id: qrcode
+                allow_stretch: True
+                size_hint_x: 1
+                size_hint_y: None
+                height: self.width

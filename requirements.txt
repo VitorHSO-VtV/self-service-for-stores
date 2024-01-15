@@ -1,0 +1,8 @@
+# pip install -U -r requirements.txt
+
+kivy
+reportlab
+python-escpos
+PyMuPDF
+crcmod
+qrcode

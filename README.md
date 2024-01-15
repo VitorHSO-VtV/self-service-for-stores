@@ -37,3 +37,7 @@ I haven't started the printing system and card machine system yet
 My goal for this week is to do the 1st part of the pay system, this part is the pix system
 
 I finished the pix system, it generates the qrcode
+
+### Day 6 -> 7 - 1/14/2024 -> 1/15/2024
+
+Today I added the qrcode to the pix screen

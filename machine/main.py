@@ -5,7 +5,8 @@ from kivy.animation import Animation
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
 from kivy.uix.image import Image
-from pixqrcodegen import *
+from kivy.clock import Clock
+from pix_generator import *
 from kivy.app import App
 import functions as fc
 import os
@@ -37,7 +38,7 @@ class InitScreen(Screen):
         if self.collide_point(*touch.pos):
             self.manager.transition.duration = 1.0
             self.manager.transition.direction = 'up'
-            self.manager.current = 'PayScreen'
+            self.manager.current = 'BuyScreen'
 
 
 class HomeBar(BoxLayout):
@@ -47,6 +48,15 @@ class HomeBar(BoxLayout):
         app.root.transition.duration = 1.0
         app.root.transition.direction = 'down'
         app.root.current = 'InitScreen'
+
+    def on_tools_button_press(self):
+        Clock.schedule_once(self.notify_pressed, 5)
+
+    def on_tools_button_release(self):
+        Clock.unschedule(self.notify_pressed)
+
+    def notify_pressed(self, dt):
+        print("Botão pressionado por 5 segundos")
 
 
 class WhereEat(Popup):
@@ -378,7 +388,7 @@ class CarScreen(Screen):
 
         app = App.get_running_app()
         app.root.transition.duration = 1.0
-        app.root.transition.direction = 'down'
+        app.root.transition.direction = 'up'
         app.root.current = 'PayScreen'
 
 
@@ -389,10 +399,10 @@ class PayScreen(Screen):
 
     def on_pixqr(self, *args):
         payload = Payload('VITOR H DOS S OLIPIA', '+5548988180197', '0.01', 'SAO JOSE', '***', 'manager_files')
-        payload.gerarPayload()
+        payload.generate_payload()
         app = App.get_running_app()
         app.root.transition.duration = 1.0
-        app.root.transition.direction = 'down'
+        app.root.transition.direction = 'up'
         app.root.current = 'PixScreen'
 
     def on_pre_leave(self, *args):
@@ -404,11 +414,11 @@ class PixScreen(Screen):
     def on_pre_enter(self, *args):
         anim = Animation(opacity=1, duration=0.5)
         anim.start(self.ids.PixScreen)
+        self.ids.qrcode.source = 'manager_files/pixqrcode.png'
 
     def on_pre_leave(self, *args):
         anim = Animation(opacity=0, duration=0.5)
         anim.start(self.ids.PixScreen)
-
 
 class Shopping(App):
     def build(self):
